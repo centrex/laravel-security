@@ -4,9 +4,9 @@ declare(strict_types = 1);
 
 namespace Centrex\Security\Tests;
 
+use Centrex\Security\SecurityServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use Centrex\Security\SecurityServiceProvider;
 
 class TestCase extends Orchestra
 {
