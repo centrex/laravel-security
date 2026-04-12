@@ -4,7 +4,6 @@ declare(strict_types = 1);
 
 namespace Centrex\Security\Models;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -37,7 +36,7 @@ final class SecurityRiskFlag extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo($this->userModelClass());
     }
 
     /* -------------------------------------------------
@@ -76,5 +75,10 @@ final class SecurityRiskFlag extends Model
             'evidence'    => 'array',
             'resolved_at' => 'datetime',
         ];
+    }
+
+    private function userModelClass(): string
+    {
+        return config('auth.providers.users.model', \App\Models\User::class);
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types = 1);
 
 namespace Centrex\Security;
 
+use Centrex\Security\Policies\SecurityPolicy;
+use Illuminate\Support\Facades\{Blade, Gate};
 use Illuminate\Support\ServiceProvider;
 
 class SecurityServiceProvider extends ServiceProvider
@@ -11,57 +13,49 @@ class SecurityServiceProvider extends ServiceProvider
     /**
      * Bootstrap the application services.
      */
-    public function boot()
+    public function boot(): void
     {
-        /*
-         * Optional methods to load your package assets
-         */
-        // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'laravel-security');
-        // $this->loadViewsFrom(__DIR__.'/../resources/views', 'laravel-security');
-        // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        // $this->loadRoutesFrom(__DIR__.'/routes.php');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'security');
+        Blade::anonymousComponentPath(__DIR__ . '/../resources/views/components', 'security');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        $this->registerGates();
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/../config/config.php' => config_path('laravel-security.php'),
-            ], 'laravel-security-config');
+                __DIR__ . '/../config/config.php' => config_path('security.php'),
+            ], 'security-config');
 
-            // Publishing the migrations.
             $this->publishes([
                 __DIR__ . '/../database/migrations/' => database_path('migrations'),
-            ], 'laravel-security-migrations');
+            ], 'security-migrations');
 
-            // Publishing the views.
             $this->publishes([
-                __DIR__ . '/../resources/views' => resource_path('views/vendor/laravel-security'),
-            ], 'laravel-security-views');
-
-            // Publishing assets.
-            /*$this->publishes([
-                __DIR__.'/../resources/assets' => public_path('vendor/laravel-security'),
-            ], 'laravel-security-assets');*/
-
-            // Publishing the translation files.
-            /*$this->publishes([
-                __DIR__.'/../resources/lang' => resource_path('lang/vendor/laravel-security'),
-            ], 'laravel-security-lang');*/
-
-            // Registering package commands.
-            // $this->commands([]);
+                __DIR__ . '/../resources/views' => resource_path('views/vendor/security'),
+            ], 'security-views');
         }
     }
 
     /**
      * Register the application services.
      */
-    public function register()
+    public function register(): void
     {
-        // Automatically apply the package configuration
-        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'laravel-security');
+        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'security');
 
-        // Register the main class to use with the facade
         $this->app->singleton('laravel-security', function () {
             return new Security();
         });
+    }
+
+    private function registerGates(): void
+    {
+        if (!Gate::has('security.risk-flags.view')) {
+            Gate::define('security.risk-flags.view', [SecurityPolicy::class, 'viewRisks']);
+        }
+
+        if (!Gate::has('security.risk-flags.resolve')) {
+            Gate::define('security.risk-flags.resolve', [SecurityPolicy::class, 'resolveRisk']);
+        }
     }
 }
