@@ -2,13 +2,13 @@
 
 declare(strict_types = 1);
 
-namespace VendorName\Skeleton\Commands;
+namespace Centrex\Security\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class SecurityCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravel-security';
 
     public $description = 'My command';
 
