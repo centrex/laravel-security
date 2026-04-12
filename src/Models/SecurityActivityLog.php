@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Centrex\Security\Models;
 
@@ -77,9 +77,9 @@ final class SecurityActivityLog extends Model
     protected function casts(): array
     {
         return [
-            'risk_score' => 'integer',
+            'risk_score'   => 'integer',
             'is_anomalous' => 'boolean',
-            'metadata' => 'array',
+            'metadata'     => 'array',
         ];
     }
 }

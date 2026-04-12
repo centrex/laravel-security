@@ -1,11 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Centrex\Security\Http\Middleware;
 
-use Centrex\Security\Events\RiskEvaluated;
-use Centrex\Security\Events\RiskFlagRaised;
+use Centrex\Security\Events\{RiskEvaluated, RiskFlagRaised};
 use Centrex\Security\Support\Security\RiskEngineInterface;
 use Closure;
 use Illuminate\Http\Request;
@@ -20,9 +19,9 @@ final readonly class PhishingDetectionMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         $signals = [
-            'ip_reputation' => $request->attributes->get('ip_reputation'),
-            'is_new_device' => (bool) $request->attributes->get('is_new_device', false),
-            'geo_mismatch' => (bool) $request->attributes->get('geo_mismatch', false),
+            'ip_reputation'   => $request->attributes->get('ip_reputation'),
+            'is_new_device'   => (bool) $request->attributes->get('is_new_device', false),
+            'geo_mismatch'    => (bool) $request->attributes->get('geo_mismatch', false),
             'failed_attempts' => (int) $request->attributes->get('failed_attempts', 0),
         ];
 

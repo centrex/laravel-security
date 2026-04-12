@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Centrex\Security\Listeners;
 
@@ -15,12 +15,12 @@ final class PersistSecurityActivity implements ShouldQueue
     public function handle(RiskEvaluated $event): void
     {
         SecurityActivityLog::create([
-            'user_id' => $event->userId,
-            'ip_address' => $event->ip,
-            'event_type' => 'risk_evaluated',
-            'risk_score' => $event->score,
+            'user_id'      => $event->userId,
+            'ip_address'   => $event->ip,
+            'event_type'   => 'risk_evaluated',
+            'risk_score'   => $event->score,
             'is_anomalous' => $event->score >= 50,
-            'metadata' => $event->signals,
+            'metadata'     => $event->signals,
         ]);
     }
 }

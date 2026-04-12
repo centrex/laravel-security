@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Centrex\Security\Actions;
 
@@ -15,10 +15,10 @@ final class RequestSecurityApproval
         ?string $reason = null,
     ): void {
         SecurityApproval::create([
-            'action_type' => $actionType,
-            'target_id' => $targetId,
+            'action_type'  => $actionType,
+            'target_id'    => $targetId,
             'requested_by' => $requestedBy,
-            'reason' => $reason,
+            'reason'       => $reason,
         ]);
     }
 }

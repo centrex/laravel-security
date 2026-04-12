@@ -1,11 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Centrex\Security\Http\Middleware;
 
-use Centrex\Security\Events\RiskEvaluated;
-use Centrex\Security\Events\RiskFlagRaised;
+use Centrex\Security\Events\{RiskEvaluated, RiskFlagRaised};
 use Centrex\Security\Support\Security\RiskEngineInterface;
 use Closure;
 use Illuminate\Http\Request;
@@ -53,7 +52,7 @@ final readonly class RiskEvaluationMiddleware
 
             abort(
                 Response::HTTP_FORBIDDEN,
-                'Access blocked due to elevated security risk.'
+                'Access blocked due to elevated security risk.',
             );
         }
 
@@ -77,15 +76,15 @@ final readonly class RiskEvaluationMiddleware
             'is_authenticated' => $request->user() !== null,
 
             // Network
-            'ip_address' => $request->ip(),
+            'ip_address'    => $request->ip(),
             'ip_reputation' => $request->attributes->get('ip_reputation'),
 
             // Device / Behaviour
             'is_new_device' => (bool) $request->attributes->get('is_new_device', false),
-            'geo_mismatch' => (bool) $request->attributes->get('geo_mismatch', false),
+            'geo_mismatch'  => (bool) $request->attributes->get('geo_mismatch', false),
 
             // Request context
-            'route' => optional($request->route())->getName(),
+            'route'  => optional($request->route())->getName(),
             'method' => $request->method(),
             'is_api' => $request->expectsJson(),
 

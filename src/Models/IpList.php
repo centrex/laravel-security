@@ -1,11 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Centrex\Security\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 
 final class IpList extends Model
 {
@@ -70,9 +69,9 @@ final class IpList extends Model
     protected function casts(): array
     {
         return [
-            'is_tor' => 'boolean',
-            'is_proxy' => 'boolean',
-            'is_vpn' => 'boolean',
+            'is_tor'     => 'boolean',
+            'is_proxy'   => 'boolean',
+            'is_vpn'     => 'boolean',
             'risk_score' => 'integer',
         ];
     }

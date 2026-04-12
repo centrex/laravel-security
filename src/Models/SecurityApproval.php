@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Centrex\Security\Models;
 
@@ -33,7 +33,7 @@ final class SecurityApproval extends Model
 
         $this->update([
             'approved_by' => $approverId,
-            'status' => 'approved',
+            'status'      => 'approved',
         ]);
     }
 }

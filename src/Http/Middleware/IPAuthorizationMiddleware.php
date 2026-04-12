@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Centrex\Security\Http\Middleware;
 
 use Closure;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\{Request};
+use Illuminate\Support\Facades\{Cache, DB};
 use Symfony\Component\HttpFoundation\Response;
 
 final class IPAuthorizationMiddleware
@@ -18,10 +16,10 @@ final class IPAuthorizationMiddleware
         $ip = $request->ip();
 
         if ($ip === null) {
-                return JsonResponse(
-                    ['status' => 'error', 'status_code' => Response::HTTP_UNAUTHORIZED, 'error' => [ 'message' => 'Unable to determine client IP address.', 'timestamp' => now() ]], 
-                    Response::HTTP_UNAUTHORIZED
-                );
+            return JsonResponse(
+                ['status' => 'error', 'status_code' => Response::HTTP_UNAUTHORIZED, 'error' => ['message' => 'Unable to determine client IP address.', 'timestamp' => now()]],
+                Response::HTTP_UNAUTHORIZED,
+            );
         }
 
         /*
@@ -32,13 +30,13 @@ final class IPAuthorizationMiddleware
         $allowedIps = Cache::remember(
             'security:ip_allowlist:v1',
             now()->addMinutes(5),
-            fn (): array => $this->allowedIps()
+            fn (): array => $this->allowedIps(),
         );
 
-        if (! in_array($ip, $allowedIps, true)) {
+        if (!in_array($ip, $allowedIps, true)) {
             return JsonResponse(
-                ['status' => 'error', 'status_code' => Response::HTTP_UNAUTHORIZED, 'error' => [ 'message' => 'IP address not authorized.', 'timestamp' => now() ]],
-                Response::HTTP_UNAUTHORIZED
+                ['status' => 'error', 'status_code' => Response::HTTP_UNAUTHORIZED, 'error' => ['message' => 'IP address not authorized.', 'timestamp' => now()]],
+                Response::HTTP_UNAUTHORIZED,
             );
         }
 

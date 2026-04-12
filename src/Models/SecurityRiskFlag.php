@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Centrex\Security\Models;
 
@@ -73,7 +73,7 @@ final class SecurityRiskFlag extends Model
     protected function casts(): array
     {
         return [
-            'evidence' => 'array',
+            'evidence'    => 'array',
             'resolved_at' => 'datetime',
         ];
     }

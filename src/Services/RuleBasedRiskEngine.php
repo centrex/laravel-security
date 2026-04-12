@@ -1,11 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Centrex\Security\Services;
 
-use Centrex\Security\Support\Security\RiskEngineInterface;
-use Centrex\Security\Support\Security\RiskResult;
+use Centrex\Security\Support\Security\{RiskEngineInterface, RiskResult};
 
 final class RuleBasedRiskEngine implements RiskEngineInterface
 {
