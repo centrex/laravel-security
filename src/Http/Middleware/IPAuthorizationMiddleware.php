@@ -5,7 +5,7 @@ declare(strict_types = 1);
 namespace Centrex\Security\Http\Middleware;
 
 use Closure;
-use Illuminate\Http\{Request};
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Cache, DB};
 use Symfony\Component\HttpFoundation\Response;
 
