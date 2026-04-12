@@ -27,14 +27,14 @@ class SecurityServiceProvider extends ServiceProvider
             ], 'laravel-security-config');
 
             // Publishing the migrations.
-            /*$this->publishes([
+            $this->publishes([
                 __DIR__.'/../database/migrations/' => database_path('migrations')
-            ], 'laravel-security-migrations');*/
+            ], 'laravel-security-migrations');
 
             // Publishing the views.
-            /*$this->publishes([
+            $this->publishes([
                 __DIR__.'/../resources/views' => resource_path('views/vendor/laravel-security'),
-            ], 'laravel-security-views');*/
+            ], 'laravel-security-views');
 
             // Publishing assets.
             /*$this->publishes([
