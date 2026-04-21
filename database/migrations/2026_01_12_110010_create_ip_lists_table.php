@@ -8,22 +8,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class() extends Migration
 {
-    protected $connection;
-
-    public function __construct()
-    {
-        $this->connection = config(
-            'security.drivers.database.connection',
-            config('database.default'),
-        );
-    }
 
     public function up(): void
     {
-        /* ==========================================================
-         | IP Intelligence & Reputation
-         |==========================================================*/
-        Schema::connection($this->connection)->create('ip_lists', function (Blueprint $table): void {
+        $p = config('security.table_prefix') ?: 'sec_';
+        $c = config('security.drivers.database.connection', config('database.default'));
+
+        Schema::connection($c)->create($p . 'ip_lists', function (Blueprint $table): void {
             $table->id();
 
             // IP & Network
@@ -75,7 +66,7 @@ return new class() extends Migration
         /* ==========================================================
          | Security Activity Logs (Append-Only)
          |==========================================================*/
-        Schema::connection($this->connection)->create('security_activity_logs', function (Blueprint $table): void {
+        Schema::connection($c)->create($p . 'security_activity_logs', function (Blueprint $table): void {
             $table->id();
 
             // User Context
@@ -115,7 +106,7 @@ return new class() extends Migration
         /* ==========================================================
          | Risk Flags (Investigations)
          |==========================================================*/
-        Schema::connection($this->connection)->create('security_risk_flags', function (Blueprint $table): void {
+        Schema::connection($c)->create($p . 'security_risk_flags', function (Blueprint $table): void {
             $table->id();
 
             $table->foreignId('user_id')->nullable()->index();
@@ -138,7 +129,7 @@ return new class() extends Migration
         /* ==========================================================
          | 4-Eyes Approval Workflow
          |==========================================================*/
-        Schema::connection($this->connection)->create('security_approvals', function (Blueprint $table): void {
+        Schema::connection($c)->create($p . 'security_approvals', function (Blueprint $table): void {
             $table->id();
 
             $table->string('action_type', 50)
@@ -164,9 +155,12 @@ return new class() extends Migration
 
     public function down(): void
     {
-        Schema::connection($this->connection)->dropIfExists('security_approvals');
-        Schema::connection($this->connection)->dropIfExists('security_risk_flags');
-        Schema::connection($this->connection)->dropIfExists('security_activity_logs');
-        Schema::connection($this->connection)->dropIfExists('ip_lists');
+        $p = config('security.table_prefix') ?: 'sec_';
+        $c = config('security.drivers.database.connection', config('database.default'));
+
+        Schema::connection($c)->dropIfExists($p . 'security_approvals');
+        Schema::connection($c)->dropIfExists($p . 'security_risk_flags');
+        Schema::connection($c)->dropIfExists($p . 'security_activity_logs');
+        Schema::connection($c)->dropIfExists($p . 'ip_lists');
     }
 };

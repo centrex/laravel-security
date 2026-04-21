@@ -4,13 +4,18 @@ declare(strict_types = 1);
 
 namespace Centrex\Security\Models;
 
+use Centrex\Security\Concerns\AddTablePrefix;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 
 final class IpList extends Model
 {
+    use AddTablePrefix;
     use SoftDeletes;
 
-    protected $table = 'ip_lists';
+    protected function getTableSuffix(): string
+    {
+        return 'ip_lists';
+    }
 
     protected $fillable = [
         'ip_address',

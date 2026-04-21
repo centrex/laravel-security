@@ -4,12 +4,18 @@ declare(strict_types = 1);
 
 namespace Centrex\Security\Models;
 
+use Centrex\Security\Concerns\AddTablePrefix;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class SecurityRiskFlag extends Model
 {
-    protected $table = 'security_risk_flags';
+    use AddTablePrefix;
+
+     protected function getTableSuffix(): string
+    {
+        return 'security_risk_flags';
+    }
 
     protected $fillable = [
         'user_id',

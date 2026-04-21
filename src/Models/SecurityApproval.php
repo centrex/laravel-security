@@ -4,10 +4,18 @@ declare(strict_types = 1);
 
 namespace Centrex\Security\Models;
 
+use Centrex\Security\Concerns\AddTablePrefix;
 use Illuminate\Database\Eloquent\Model;
 
 final class SecurityApproval extends Model
 {
+    use AddTablePrefix;
+
+    protected function getTableSuffix(): string
+    {
+        return 'security_approvals';
+    }
+
     protected $fillable = [
         'action_type',
         'target_id',

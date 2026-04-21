@@ -4,12 +4,18 @@ declare(strict_types = 1);
 
 namespace Centrex\Security\Models;
 
+use Centrex\Security\Concerns\AddTablePrefix;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class SecurityActivityLog extends Model
 {
-    protected $table = 'security_activity_logs';
+    use AddTablePrefix;
+
+    protected function getTableSuffix(): string
+    {
+        return 'security_activity_logs';
+    }
 
     protected $fillable = [
         'user_id',
