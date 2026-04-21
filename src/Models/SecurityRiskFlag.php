@@ -12,7 +12,7 @@ final class SecurityRiskFlag extends Model
 {
     use AddTablePrefix;
 
-     protected function getTableSuffix(): string
+    protected function getTableSuffix(): string
     {
         return 'security_risk_flags';
     }
