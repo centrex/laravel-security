@@ -57,5 +57,16 @@ class SecurityServiceProvider extends ServiceProvider
         if (!Gate::has('security.risk-flags.resolve')) {
             Gate::define('security.risk-flags.resolve', [SecurityPolicy::class, 'resolveRisk']);
         }
+
+        // Canonical ERP-wide ability names (see TeamAccess::permissionCatalog() in the host
+        // app, which grants these via team roles). These definitions are only a standalone
+        // fallback for when the package runs without that app-level team-permission wiring.
+        if (!Gate::has('security.audit.view')) {
+            Gate::define('security.audit.view', [SecurityPolicy::class, 'viewRisks']);
+        }
+
+        if (!Gate::has('security.incidents.manage')) {
+            Gate::define('security.incidents.manage', [SecurityPolicy::class, 'resolveRisk']);
+        }
     }
 }
