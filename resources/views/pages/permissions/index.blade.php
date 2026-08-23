@@ -30,7 +30,9 @@
                                         <span class="label-text text-xs uppercase text-base-content/60">Permission</span>
                                         <input type="text" name="name" value="{{ $permission->name }}" class="input input-bordered input-sm w-full max-w-md" />
                                     </label>
-                                    <div class="mt-2 text-sm text-base-content/60">Guard: {{ $permission->guard_name }}</div>
+                                    @if ($permission->guard_name ?? null)
+                                        <div class="mt-2 text-sm text-base-content/60">Guard: {{ $permission->guard_name }}</div>
+                                    @endif
                                 </div>
                                 <x-tallui-button type="submit" class="btn-primary btn-sm">Save Permission</x-tallui-button>
                             </div>

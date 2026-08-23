@@ -6,11 +6,10 @@ namespace Centrex\Security\Http\Controllers;
 
 use Centrex\Security\Models\{IpList, SecurityActivityLog, SecurityApproval, SecurityRiskFlag};
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
-use Spatie\Permission\Contracts\{Permission as PermissionContract, Role as RoleContract};
 
 class SecurityController extends Controller
 {
@@ -57,7 +56,7 @@ class SecurityController extends Controller
             [
                 'title'       => 'Permissions',
                 'value'       => (string) $this->permissionModelClass()::query()->count(),
-                'description' => 'Granular permission keys managed through Spatie.',
+                'description' => 'Granular permission keys available for assignment.',
                 'icon'        => 'o-key',
                 'route'       => route('security.permissions.index'),
             ],
@@ -268,7 +267,8 @@ class SecurityController extends Controller
                 ->withCount('users')
                 ->orderBy('name')
                 ->get(),
-            'permissions' => $permissionModel::query()->orderBy('name')->get(),
+            'permissions'      => $permissionModel::query()->orderBy('name')->get(),
+            'identifierColumn' => $this->identifierColumn(),
         ]);
     }
 
@@ -276,22 +276,20 @@ class SecurityController extends Controller
     {
         $this->authorizeAccessManagement();
 
-        $rolesTable = config('permission.table_names.roles', 'roles');
-        $permissionsTable = config('permission.table_names.permissions', 'permissions');
+        $identifierColumn = $this->identifierColumn();
 
         $validated = $request->validate([
-            'name'          => ['required', 'string', 'max:255', 'unique:' . $rolesTable . ',name'],
+            'name'          => ['required', 'string', 'max:255', 'unique:' . $this->roleTable() . ',name'],
             'permissions'   => ['array'],
-            'permissions.*' => ['string', 'exists:' . $permissionsTable . ',name'],
+            'permissions.*' => ['string', 'exists:' . $this->permissionTable() . ',' . $identifierColumn],
         ]);
 
         $roleModel = $this->roleModelClass();
-        /** @var RoleContract $role */
-        $role = $roleModel::query()->create([
-            'name'       => $validated['name'],
-            'guard_name' => config('auth.defaults.guard', 'web'),
-        ]);
-        $role->syncPermissions($validated['permissions'] ?? []);
+        $role = $roleModel::query()->create($this->withGuardName([
+            'name' => $validated['name'],
+        ], $roleModel, $this->roleDefaults()));
+
+        $this->syncPermissions($role, $validated['permissions'] ?? [], $identifierColumn);
 
         return redirect()
             ->route('security.roles.index')
@@ -303,19 +301,17 @@ class SecurityController extends Controller
         $this->authorizeAccessManagement();
 
         $roleModel = $this->roleModelClass();
-        /** @var RoleContract $role */
         $role = $roleModel::query()->findOrFail($roleId);
-        $rolesTable = config('permission.table_names.roles', 'roles');
-        $permissionsTable = config('permission.table_names.permissions', 'permissions');
+        $identifierColumn = $this->identifierColumn();
 
         $validated = $request->validate([
-            'name'          => ['required', 'string', 'max:255', 'unique:' . $rolesTable . ',name,' . $role->getKey()],
+            'name'          => ['required', 'string', 'max:255', 'unique:' . $this->roleTable() . ',name,' . $role->getKey()],
             'permissions'   => ['array'],
-            'permissions.*' => ['string', 'exists:' . $permissionsTable . ',name'],
+            'permissions.*' => ['string', 'exists:' . $this->permissionTable() . ',' . $identifierColumn],
         ]);
 
         $role->update(['name' => $validated['name']]);
-        $role->syncPermissions($validated['permissions'] ?? []);
+        $this->syncPermissions($role, $validated['permissions'] ?? [], $identifierColumn);
 
         return redirect()
             ->route('security.roles.index')
@@ -334,24 +330,23 @@ class SecurityController extends Controller
                 ->with('roles')
                 ->orderBy('name')
                 ->get(),
-            'roles' => $roleModel::query()->orderBy('name')->get(),
+            'roles'            => $roleModel::query()->orderBy('name')->get(),
+            'identifierColumn' => $this->identifierColumn(),
         ]);
     }
 
     public function storePermission(Request $request): RedirectResponse
     {
         $this->authorizeAccessManagement();
-        $permissionsTable = config('permission.table_names.permissions', 'permissions');
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:' . $permissionsTable . ',name'],
+            'name' => ['required', 'string', 'max:255', 'unique:' . $this->permissionTable() . ',name'],
         ]);
 
         $permissionModel = $this->permissionModelClass();
-        $permissionModel::query()->create([
-            'name'       => $validated['name'],
-            'guard_name' => config('auth.defaults.guard', 'web'),
-        ]);
+        $permissionModel::query()->create($this->withGuardName([
+            'name' => $validated['name'],
+        ], $permissionModel, $this->permissionDefaults()));
 
         return redirect()
             ->route('security.permissions.index')
@@ -363,12 +358,10 @@ class SecurityController extends Controller
         $this->authorizeAccessManagement();
 
         $permissionModel = $this->permissionModelClass();
-        /** @var PermissionContract $permission */
         $permission = $permissionModel::query()->findOrFail($permissionId);
-        $permissionsTable = config('permission.table_names.permissions', 'permissions');
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:' . $permissionsTable . ',name,' . $permission->getKey()],
+            'name' => ['required', 'string', 'max:255', 'unique:' . $this->permissionTable() . ',name,' . $permission->getKey()],
         ]);
 
         $permission->update(['name' => $validated['name']]);
@@ -439,11 +432,97 @@ class SecurityController extends Controller
 
     private function roleModelClass(): string
     {
-        return config('permission.models.role', \Spatie\Permission\Models\Role::class);
+        return config('security.access_management.models.role', \Spatie\Permission\Models\Role::class);
     }
 
     private function permissionModelClass(): string
     {
-        return config('permission.models.permission', \Spatie\Permission\Models\Permission::class);
+        return config('security.access_management.models.permission', \Spatie\Permission\Models\Permission::class);
+    }
+
+    private function roleTable(): string
+    {
+        $model = $this->roleModelClass();
+
+        return (new $model)->getTable();
+    }
+
+    private function permissionTable(): string
+    {
+        $model = $this->permissionModelClass();
+
+        return (new $model)->getTable();
+    }
+
+    /** Which column role/permission pickers and unique/exists validation match against — see config('security.access_management.identifier_column'). */
+    private function identifierColumn(): string
+    {
+        return (string) config('security.access_management.identifier_column', 'name');
+    }
+
+    private function roleDefaults(): array
+    {
+        return $this->resolveDefaults('access_management.role_defaults');
+    }
+
+    private function permissionDefaults(): array
+    {
+        return $this->resolveDefaults('access_management.permission_defaults');
+    }
+
+    private function resolveDefaults(string $configKey): array
+    {
+        $value = config('security.' . $configKey);
+
+        if (is_callable($value)) {
+            $value = $value();
+        }
+
+        return is_array($value) ? $value : [];
+    }
+
+    /**
+     * Merges configured defaults (e.g. jurager/teams's required team_id, which
+     * spatie/laravel-permission's models have no equivalent of) onto $attributes, and adds
+     * guard_name only when the target model actually has that column — spatie's models
+     * need it, jurager/teams's don't, and including it unconditionally would either be
+     * silently dropped or throw under strict mass-assignment depending on the host app's
+     * Model configuration.
+     */
+    private function withGuardName(array $attributes, string $modelClass, array $defaults): array
+    {
+        $attributes = array_merge($defaults, $attributes);
+
+        if (in_array('guard_name', (new $modelClass)->getFillable(), true)) {
+            $attributes['guard_name'] = config('auth.defaults.guard', 'web');
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Model-agnostic replacement for Spatie's Role::syncPermissions() (a HasRoles-trait
+     * method jurager/teams's Role doesn't have): resolves the submitted permission
+     * identifiers (whichever column $identifierColumn points at) to IDs via the configured
+     * permission model, then syncs the role's own permissions() relation directly. Both
+     * spatie/laravel-permission's Role and jurager/teams's Role expose a `permissions()`
+     * *ToMany relation, so this works for either without knowing which one is configured.
+     */
+    private function syncPermissions(Model $role, array $identifiers, string $identifierColumn): void
+    {
+        if (!method_exists($role, 'permissions')) {
+            return;
+        }
+
+        if ($identifiers === []) {
+            $role->permissions()->sync([]);
+
+            return;
+        }
+
+        $permissionModel = $this->permissionModelClass();
+        $ids = $permissionModel::query()->whereIn($identifierColumn, $identifiers)->pluck('id');
+
+        $role->permissions()->sync($ids);
     }
 }

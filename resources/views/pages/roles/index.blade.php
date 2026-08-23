@@ -1,6 +1,6 @@
 <x-layouts::app>
     <div class="space-y-6">
-        <x-tallui-page-header title="Role Management" subtitle="Create roles and sync permission bundles with laravel-permission." icon="o-users" />
+        <x-tallui-page-header title="Role Management" subtitle="Create roles and sync permission bundles." icon="o-users" />
         @include('security::partials.flash')
         @include('security::partials.nav')
 
@@ -18,8 +18,8 @@
                         <div class="grid gap-2 sm:grid-cols-2">
                             @foreach ($permissions as $permission)
                                 <label class="flex items-center gap-2 rounded-xl border border-base-200 px-3 py-2 text-sm">
-                                    <input type="checkbox" name="permissions[]" value="{{ $permission->name }}" class="checkbox checkbox-sm" @checked(in_array($permission->name, old('permissions', []), true)) />
-                                    <span>{{ $permission->name }}</span>
+                                    <input type="checkbox" name="permissions[]" value="{{ $permission->{$identifierColumn} }}" class="checkbox checkbox-sm" @checked(in_array($permission->{$identifierColumn}, old('permissions', []), true)) />
+                                    <span>{{ $permission->name ?: $permission->{$identifierColumn} }}</span>
                                 </label>
                             @endforeach
                         </div>
@@ -42,7 +42,9 @@
                                         <input type="text" name="name" value="{{ $role->name }}" class="input input-bordered input-sm max-w-xs" />
                                         <x-tallui-badge type="ghost">{{ $role->users_count }} users</x-tallui-badge>
                                     </div>
-                                    <div class="mt-2 text-sm text-base-content/60">Guard: {{ $role->guard_name }}</div>
+                                    @if ($role->guard_name ?? null)
+                                        <div class="mt-2 text-sm text-base-content/60">Guard: {{ $role->guard_name }}</div>
+                                    @endif
                                 </div>
                                 <x-tallui-button type="submit" class="btn-primary btn-sm">Save Role</x-tallui-button>
                             </div>
@@ -53,11 +55,11 @@
                                         <input
                                             type="checkbox"
                                             name="permissions[]"
-                                            value="{{ $permission->name }}"
+                                            value="{{ $permission->{$identifierColumn} }}"
                                             class="checkbox checkbox-sm"
-                                            @checked($role->permissions->contains('name', $permission->name))
+                                            @checked($role->permissions->contains($identifierColumn, $permission->{$identifierColumn}))
                                         />
-                                        <span>{{ $permission->name }}</span>
+                                        <span>{{ $permission->name ?: $permission->{$identifierColumn} }}</span>
                                     </label>
                                 @endforeach
                             </div>
