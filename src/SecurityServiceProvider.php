@@ -44,7 +44,7 @@ class SecurityServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'security');
 
         $this->app->singleton('laravel-security', function () {
-            return new Security();
+            return new Security;
         });
     }
 
